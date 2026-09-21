@@ -8,6 +8,8 @@ metadata:
     - openstack
     - magnum
     - kubernetes
+  annotations:
+    backstage.io/techdocs-ref: dir:.
 spec:
   owner: guest
   type: template
