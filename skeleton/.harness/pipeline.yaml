@@ -1,0 +1,89 @@
+pipeline:
+  name: {{ values.name }}-pipeline
+  identifier: {{ values.name | replace("-", "_") }}_pipeline
+  projectIdentifier: platform_engineering_project
+  orgIdentifier: default
+  tags:
+    platform: openstack-magnum
+  stages:
+    - stage:
+        name: Build and Push
+        identifier: build_and_push
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: magnum_build_cluster_connector
+          execution:
+            steps:
+              - step:
+                  name: Build Frontend Image
+                  identifier: build_frontend
+                  type: BuildAndPushDockerRegistry
+                  spec:
+                    connectorRef: corporate_registry_connector
+                    repo: {{ values.name }}-frontend
+                    tags:
+                      - <+pipeline.sequenceId>
+              - step:
+                  name: Build Backend Image
+                  identifier: build_backend
+                  type: BuildAndPushDockerRegistry
+                  spec:
+                    connectorRef: corporate_registry_connector
+                    repo: {{ values.name }}-backend
+                    tags:
+                      - <+pipeline.sequenceId>
+
+    - stage:
+        name: Deploy to OpenStack Magnum
+        identifier: deploy_to_magnum
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: {{ values.name | replace("-", "_") }}_service
+            serviceInputs:
+              name: {{ values.name }}
+              type: Kubernetes
+              spec:
+                manifests:
+                  - manifest:
+                      identifier: k8s_manifests
+                      type: K8sManifest
+                      spec:
+                        store:
+                          type: Github
+                          spec:
+                            connectorRef: github_corporate_connector
+                            gitFetchType: Branch
+                            branch: main
+                            folderPath: k8s/
+          environment:
+            environmentRef: production_env
+            deployToAll: false
+            infrastructureDefinitions:
+              - infrastructureDefinition:
+                  identifier: magnum_k8s_cluster
+                  name: OpenStack Magnum Cluster
+                  type: KubernetesDirect
+                  spec:
+                    connectorRef: openstack_magnum_k8s_connector
+                    namespace: {{ values.namespace }}
+          execution:
+            steps:
+              - step:
+                  name: Rollout 3-Tier Application
+                  identifier: k8s_rolling_deploy
+                  type: K8sRollingDeploy
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: true
+            rollbackSteps:
+              - step:
+                  name: Rollback on Failure
+                  identifier: k8s_rollback
+                  type: K8sRollback
+                  spec: {}
