@@ -4,7 +4,7 @@ metadata:
   name: sample-backstage-scaffold
   annotations:
     github.com/project-slug: blackcatengineering/sample-backstage-scaffold
-    backstage.io/techdocs-ref: blackcatengineering/sample-backstage-scaffold
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: template
   lifecycle: unknown
