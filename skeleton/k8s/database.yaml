@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ values.name }}-db-pvc
+  namespace: {{ values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: {{ values.dbStorageSize }}Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ values.name }}-db
+  namespace: {{ values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ values.name }}
+      tier: database
+  template:
+    metadata:
+      labels:
+        app: {{ values.name }}
+        tier: database
+    spec:
+      containers:
+        - name: database
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_DB
+              value: appdb
+            - name: POSTGRES_USER
+              value: appuser
+            - name: POSTGRES_PASSWORD
+              value: changemesecret
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: {{ values.name }}-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ values.name }}-db-service
+  namespace: {{ values.namespace }}
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: {{ values.name }}
+    tier: database
