@@ -5,6 +5,6 @@ metadata:
   annotations:
     github.com/project-slug: blackcatengineering/sample-backstage-scaffold
 spec:
-  type: service
+  type: template
   lifecycle: unknown
   owner: admin
