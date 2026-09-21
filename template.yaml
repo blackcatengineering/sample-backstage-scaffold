@@ -9,8 +9,8 @@ metadata:
     - magnum
     - kubernetes
 spec:
-  owner: guests # Using 'guests' ensures anyone can run it without database restriction
-  type: template # Change 'service' to 'template' so the UI filter displays it
+  owner: guest
+  type: template
 
   parameters:
     - title: App Metadata
@@ -23,10 +23,10 @@ spec:
           type: string
           description: Unique name of the 3-tier application.
         owner:
-          title: Owner
+          title: Owner Group
           type: string
-          description: Your team name (e.g., engineering-team)
-          default: engineering-team
+          description: The group that owns this component.
+          default: engineering-group
 
     - title: Infrastructure & Routing Configuration
       required:
@@ -46,11 +46,9 @@ spec:
           title: External Routing Strategy
           type: string
           default: Ingress
-          description: Choose how OpenStack routes external traffic to your Frontend tier.
           enum:
             - Ingress
             - Octavia LoadBalancer
-          ui:widget: radio
 
   steps:
     - id: fetch-base
@@ -59,19 +57,19 @@ spec:
       input:
         url: ./skeleton
         values:
-          name: ${{ parameters.name }}
-          owner: ${{ parameters.owner }}
-          namespace: ${{ parameters.namespace }}
-          dbStorageSize: ${{ parameters.dbStorageSize }}
-          routingType: ${{ parameters.routingType }}
+          name: ${{ values.name }}
+          owner: ${{ values.owner }}
+          namespace: ${{ values.namespace }}
+          dbStorageSize: ${{ values.dbStorageSize }}
+          routingType: ${{ values.routingType }}
 
     - id: publish
       name: Publish to Git Repository
       action: publish:github
       input:
         allowedHosts: ['github.com']
-        description: This is ${{ parameters.name }} hosted on OpenStack Magnum
-        repoUrl: '://github.com{{ parameters.owner }}&repo=${{ parameters.name }}'
+        description: This is ${{ values.name }} hosted on OpenStack Magnum
+        repoUrl: '://github.com{{ values.owner }}&repo=${{ values.name }}'
 
     - id: register
       name: Register in Backstage Catalog
