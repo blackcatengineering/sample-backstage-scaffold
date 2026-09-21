@@ -28,7 +28,6 @@ metadata:
   namespace: {{ values.namespace }}
   {%- if values.routingType == "Octavia LoadBalancer" %}
   annotations:
-    # Ensures OpenStack Octavia handles the LB provisioning
     kubernetes.io/ingress.class: "openstack"
   {%- endif %}
 spec:
@@ -61,3 +60,4 @@ spec:
                 port:
                   number: 80
 {% endif %}
+```

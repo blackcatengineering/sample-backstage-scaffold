@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ values.name }}-backend
+  namespace: {{ values.namespace }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ values.name }}
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: {{ values.name }}
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: my-registry/{{ values.name }}-backend:latest
+          env:
+            - name: DB_HOST
+              value: "{{ values.name }}-db-service"
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ values.name }}-backend-service
+  namespace: {{ values.namespace }}
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: {{ values.name }}
+    tier: backend

@@ -1,0 +1,7 @@
+site_name: OpenStack Magnum 3-Tier Template Documentation
+
+nav:
+  - Home: index.md
+
+plugins:
+  - techdocs-core

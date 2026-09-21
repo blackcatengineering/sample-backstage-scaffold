@@ -69,7 +69,7 @@ spec:
       input:
         allowedHosts: ['github.com']
         description: This is ${{ values.name }} hosted on OpenStack Magnum
-        repoUrl: '://github.com{{ values.owner }}&repo=${{ values.name }}'
+        repoUrl: 'github.com?owner=${{ values.owner }}&repo=${{ values.name }}'
 
     - id: register
       name: Register in Backstage Catalog
