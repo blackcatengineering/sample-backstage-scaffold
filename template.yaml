@@ -69,7 +69,6 @@ spec:
       name: Publish to Git Repository
       action: publish:github
       input:
-        allowedHosts: ['github.com']
         description: This is ${{ values.name }} hosted on OpenStack Magnum
         repoUrl: '://github.com{{ values.owner }}&repo=${{ values.name }}'
 
