@@ -9,8 +9,8 @@ metadata:
     - magnum
     - kubernetes
 spec:
-  owner: platform-engineering-team
-  type: service
+  owner: guests # Using 'guests' ensures anyone can run it without database restriction
+  type: template # Change 'service' to 'template' so the UI filter displays it
 
   parameters:
     - title: App Metadata
@@ -25,9 +25,8 @@ spec:
         owner:
           title: Owner
           type: string
-          ui:field: OwnerPicker
-          ui:options:
-            allowedKinds: [- Group]
+          description: Your team name (e.g., engineering-team)
+          default: engineering-team
 
     - title: Infrastructure & Routing Configuration
       required:
