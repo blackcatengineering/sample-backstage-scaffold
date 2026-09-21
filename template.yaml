@@ -1,0 +1,87 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: openstack-magnum-3tier-app
+  title: OpenStack Magnum 3-Tier Application
+  description: Scaffolds a 3-tier app with Kubernetes manifests ready for OpenStack Magnum CaaS.
+  tags:
+    - openstack
+    - magnum
+    - kubernetes
+spec:
+  owner: platform-engineering-team
+  type: service
+
+  parameters:
+    - title: App Metadata
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the 3-tier application.
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [- Group]
+
+    - title: Infrastructure & Routing Configuration
+      required:
+        - namespace
+        - dbStorageSize
+        - routingType
+      properties:
+        namespace:
+          title: Kubernetes Namespace
+          type: string
+          default: default
+        dbStorageSize:
+          title: Database Volume Size (Gi)
+          type: integer
+          default: 10
+        routingType:
+          title: External Routing Strategy
+          type: string
+          default: Ingress
+          description: Choose how OpenStack routes external traffic to your Frontend tier.
+          enum:
+            - Ingress
+            - Octavia LoadBalancer
+          ui:widget: radio
+
+  steps:
+    - id: fetch-base
+      name: Fetch Template Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          namespace: ${{ parameters.namespace }}
+          dbStorageSize: ${{ parameters.dbStorageSize }}
+          routingType: ${{ parameters.routingType }}
+
+    - id: publish
+      name: Publish to Git Repository
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }} hosted on OpenStack Magnum
+        repoUrl: '://github.com{{ parameters.owner }}&repo=${{ parameters.name }}'
+
+    - id: register
+      name: Register in Backstage Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
